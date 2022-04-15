@@ -1,0 +1,15 @@
+{
+    "Functions": {
+        "Files": {
+            "One_file": 0,
+            "Decrypted_name": "(desencriptado)",
+            "Encrypted_name": "(encriptado)"
+        },
+        "Routes": {
+            "Automatic_routes": 1
+        }
+    },
+    "Appearance": {
+        "Theme": 2
+    }
+}
