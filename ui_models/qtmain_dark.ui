@@ -426,6 +426,19 @@ margin: 0px;</string>
        <string>C:\</string>
       </property>
      </widget>
+     <widget class="QProgressBar" name="progress_1">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>20</y>
+        <width>501</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="value">
+       <number>0</number>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_2">
      <attribute name="title">
@@ -827,6 +840,19 @@ border: 1px solid #1083d6;
 margin: 0px;</string>
       </property>
      </widget>
+     <widget class="QProgressBar" name="progress_2">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>20</y>
+        <width>501</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="value">
+       <number>0</number>
+      </property>
+     </widget>
     </widget>
    </widget>
    <widget class="QFrame" name="frame">
@@ -858,7 +884,7 @@ margin: 0px;</string>
      </property>
      <property name="font">
       <font>
-       <pointsize>1</pointsize>
+       <pointsize>9</pointsize>
       </font>
      </property>
      <property name="cursor">

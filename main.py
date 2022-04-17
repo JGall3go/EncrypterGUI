@@ -15,15 +15,9 @@ class Model():
 
 	def __init__(self):
 
-		try:
-			basePath = sys._MEIPASS
-		except Exception:
-			basePath = os.path.abspath(".")
+		# El archivo (settings.json) debe estar siempre a la vista del usuario.
 
-		bundle_dir = getattr(sys, "_MEIPASS", os.path.abspath(os.path.dirname(__file__)))
-		json_ruta = os.path.join(bundle_dir, "settings.json")
-
-		with open(json_ruta) as self.file:
+		with open("settings.json") as self.file:
 			self.data = json.load(self.file)
 
 	def ajustes_funcionales(self):
@@ -419,15 +413,42 @@ class Controller():
 
 				def agregando_texto():
 
-					with open(f"{self.filename}", encoding = "latin-1") as f:
+					cantidad_letras = 0
+					porcentaje_por_letra = 0
+					subida_actual = 0
 
-						while True: # (HILO)
+					# Zona de la Progress bar
+					with open(f"{self.filename}", encoding = "utf-8") as f:
+
+						# Esta parte es para el funcionamiento de la Progress Bar
+						# Primero se lee la cantidad de letras que hay
+						for line in f:
+							for letter in line:
+								cantidad_letras += 1
+
+						# Si hay letras entonces se divide 100 entre la cantida de letras
+						# Este porcentaje sera la cantidad que subira la prgress bar con cada letra
+						if cantidad_letras != 0:
+
+							porcentaje_por_letra = 100/cantidad_letras
+							subida_actual = porcentaje_por_letra
+
+							while int(subida_actual) != 101:
+
+								self.view.progress_1.setValue(int(subida_actual))
+								subida_actual += porcentaje_por_letra
+
+					# Zona de encriptamiento
+					with open(f"{self.filename}", encoding = "utf-8") as f:
+
+						while True:
 
 							c = f.read(1)
 
 							if not c:
 
 								self.view.ejecutar_dialogo("Aviso", "Encriptacion terminada.")
+								self.view.progress_1.setValue(0)
 								break
 
 							letra_añadir = self.codificador_letra(c, self.diccionario_generado)
@@ -510,23 +531,48 @@ class Controller():
 
 					self.diccionario = ""
 
+					# Variables para el diccionario
 					contador = 0
 					linea_lista = ""
 					segunda_linea = ""
 
+					# Variables para la progress bar
+					cantidad_letras = 0
+					porcentaje_por_letra = 0
+					subida_actual = 0
+
+					# Zona de la Progress bar
+					with open(f"{self.filename}", encoding = "utf-8") as f:
+
+						# Esta parte es para el funcionamiento de la Progress Bar
+						# Primero se lee la cantidad de letras que hay
+						for line in f:
+							for letter in line:
+								cantidad_letras += 1
+
+						# Si hay letras entonces se divide 100 entre la cantida de letras
+						# Este porcentaje sera la cantidad que subira la prgress bar con cada letra
+						if cantidad_letras != 0:
+
+							porcentaje_por_letra = 100/cantidad_letras
+							subida_actual = porcentaje_por_letra
+
+							while int(subida_actual) != 101:
+
+								self.view.progress_2.setValue(int(subida_actual))
+								subida_actual += porcentaje_por_letra
+
 					with open(f"{self.filename}") as file:
-
-						try:
-
-							segunda_linea = file.readlines()[1]
-
-						except:
-
-							segunda_linea = "None"
 								
+						try:
+							segunda_linea = file.readlines()[1]
+						except:
+							segunda_linea = "None"
+
 						with open(f"{self.filename}") as f:
 
-							while True: # (HILO)
+							# Desencriptar archivo
+							while True:
 
 								try:
 
@@ -546,6 +592,7 @@ class Controller():
 										else:
 											
 											self.view.ejecutar_dialogo("Aviso", "Desencriptacion terminada.")
+											self.view.progress_2.setValue(0)
 											break
 
 									# En este punto se evalua si la lista esta vacia para asi agarrar la segunda linea del archivo automaticamente
@@ -610,7 +657,7 @@ class Controller():
 							if self.nombre_encriptado in filename:
 								contador_cantidad += 1
 
-					nombre_sin_extension = nombre_sin_extension.replace(f"({contador_cantidad - 1})", "") # Error por cada numero solo se esta quitando el 1
+					nombre_sin_extension = nombre_sin_extension.replace(f"({contador_cantidad-2})", "") # Error por cada numero solo se esta quitando el 1
 
 					nombre_archivo_completo = f"{nombre_sin_extension}-{self.nombre_desencriptado}{solo_extension}"
 
@@ -671,14 +718,10 @@ class Controller():
 			import random
 			from random import randrange
 
-			posibles_numeros = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+			primera_lista = ["a", "á", "b", "c", "d", "e", "é", "f", "g", "h", "i", "í", "j", "k", "l", "m", "n", "ñ", "o", "ó", "p", "q", "r", "s", "t", "u", "ú", "ü", "v", "w", "x", "y", "z"]
+			diccionario_letras = {"a": "", "á": "", "b": "", "c": "", "d": "", "e": "", "é": "", "f": "", "g": "", "h": "", "i": "", "í": "", "j": "", "k": "", "l": "", "m": "", "n": "", "ñ": "", "o": "", "ó": "", "p": "", "q": "", "r": "", "s": "", "t": "", "u": "", "ú": "", "ü": "", "v": "", "w": "", "x": "", "y": "", "z": ""}
 
-			codigo_generado = f"{random.choice(posibles_numeros)}{random.choice(posibles_numeros)}{random.choice(posibles_numeros)}{random.choice(posibles_numeros)}{random.choice(posibles_numeros)}{random.choice(posibles_numeros)}{random.choice(posibles_numeros)}{random.choice(posibles_numeros)}{random.choice(posibles_numeros)}"
-
-			primera_lista = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "ñ", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
-			diccionario_letras = {"a": "", "b": "", "c": "", "d": "", "e": "", "f": "", "g": "", "h": "", "i": "", "j": "", "k": "", "l": "", "m": "", "n": "", "ñ": "", "o": "", "p": "", "q": "", "r": "", "s": "", "t": "", "u": "", "v": "", "w": "", "x": "", "y": "", "z": ""}
-
-			letras_abecedario = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]
+			letras_abecedario = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32] # Incluidas las tildes
 
 			lista_orden = []
 			lista_usados = []
@@ -686,7 +729,7 @@ class Controller():
 			def organizador():
 
 				numero_posicion = random.choice(letras_abecedario)
-				
+
 				if numero_posicion in lista_usados:
 
 					organizador()
@@ -739,7 +782,7 @@ class Controller():
 
 		def creador_diccionario_para_decifrar(self, lista):
 
-			primera_lista = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "ñ", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+			primera_lista = ["a", "á", "b", "c", "d", "e", "é", "f", "g", "h", "i", "í", "j", "k", "l", "m", "n", "ñ", "o", "ó", "p", "q", "r", "s", "t", "u", "ú", "ü", "v", "w", "x", "y", "z"]
 
 			lista_prueba = lista
 
@@ -925,18 +968,23 @@ if __name__ == '__main__':
 """
 v1.1
 
-CAMBIOS (v1.1):
+CAMBIOS (v1.1.0):
 
-- Modelo MVC
-- Menu de ajustes
-- Rutas automaticas
-- Cambios de apariencia
-- Archivos automaticos
+- Modelo MVC.
+- Menu de ajustes.
+- Rutas automaticas.
+- Cambios de apariencia.
+- Archivos automaticos.
+
+CAMBIOS (v1.1.1):
+
+- Barras de progreso.
+- Solucion de error al encriptar letras con acentos.
 
 ERRORES:
 
 - ERROR (100): Errores de funcionamiento:
-	
+
 	- Error (101): Errores de modo
 	- Error (102): Errores de codigo de desencriptacion
 	- Error (103): Errores de nombre de archivo
