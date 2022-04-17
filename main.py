@@ -17,23 +17,102 @@ class Model():
 
 		# El archivo (settings.json) debe estar siempre a la vista del usuario.
 
-		with open("settings.json") as self.file:
-			self.data = json.load(self.file)
+		try:
+			with open("settings.json") as self.file_settings:
+				self.data_settings = json.load(self.file_settings)
 
+		except:
+			self.reiniciar_datos("settings.json")
+
+		try:
+			with open("logs.json") as self.file_logs:
+				self.data_logs = json.load(self.file_logs)
+
+		except:
+			self.reiniciar_datos("logs.json")
+
+		# Verificacion de datos
+		self.ajustes_funcionales()
+		self.ajustes_apariencia()
+		self.ajustes_logs()
+			
 	def ajustes_funcionales(self):
 
-		rutas_automaticas = self.data["Functions"]["Routes"]["Automatic_routes"]
-		one_file = self.data["Functions"]["Files"]["One_file"]
-		nombre_desencriptado = self.data["Functions"]["Files"]["Decrypted_name"]
-		nombre_encriptado = self.data["Functions"]["Files"]["Encrypted_name"]
+		try:
+			rutas_automaticas = self.data_settings["Functions"]["Routes"]["Automatic_routes"]
+			one_file = self.data_settings["Functions"]["Files"]["One_file"]
+			nombre_desencriptado = self.data_settings["Functions"]["Files"]["Decrypted_name"]
+			nombre_encriptado = self.data_settings["Functions"]["Files"]["Encrypted_name"]
 
-		return one_file, nombre_desencriptado, nombre_encriptado, rutas_automaticas
+		except:
+			self.reiniciar_datos("settings.json")
+
+		else:
+			# Si los datos no son los esperados:
+			if one_file != 0 and one_file != 1:
+				self.reiniciar_datos("settings.json")
+
+			if rutas_automaticas != 0 and rutas_automaticas != 1:
+				self.reiniciar_datos("settings.json")
+
+			simbolos_erroneos = ['/', ':', '*', '?', '"', '<', '>', '|', '!', '@', '#', '$', '%', '&']
+			errores_simbologia = 0
+
+			# Se comprueba si uno de esos simbolos esta en la variable del nombre.
+			for simbolo in simbolos_erroneos:
+
+				if errores_simbologia == 0:
+
+					if simbolo in nombre_desencriptado or simbolo in nombre_encriptado:
+						errores_simbologia = 1
+						self.reiniciar_datos("settings.json")
+
+			return int(one_file), str(nombre_desencriptado), str(nombre_encriptado), int(rutas_automaticas)
 
 	def ajustes_apariencia(self):
 
-		grupo_tema = self.data["Appearance"]["Theme"]
+		try:
+			grupo_tema = self.data_settings["Appearance"]["Theme"]
 
-		return grupo_tema
+		except:
+			self.reiniciar_datos("settings.json")
+
+		else:
+
+			if grupo_tema != 0 and grupo_tema != 1 and grupo_tema != 2:
+				self.reiniciar_datos("settings.json") 
+
+			return int(grupo_tema)
+
+	def ajustes_logs(self):
+
+		try:
+			logs_encrypt = self.data_logs["Logs"]["Encrypt"]
+			logs_decrypt = self.data_logs["Logs"]["Decrypt"]
+			logs_global = self.data_logs
+		except:
+			self.reiniciar_datos("logs.json")
+		else:
+			if type(logs_encrypt) != dict or type(logs_decrypt) != dict:
+				self.reiniciar_datos("logs.json")
+
+			return logs_encrypt, logs_decrypt, logs_global
+
+	def reiniciar_datos(self, archivo):
+
+		if archivo == "settings.json":
+
+			document_json = {"Functions": {"Files": {"One_file": 0,"Decrypted_name": "(desencriptado)","Encrypted_name": "(encriptado)"},"Routes": {"Automatic_routes": 1}},"Appearance": {"Theme": 2}}
+
+			with open("settings.json", 'w') as file:
+				json.dump(document_json, file, indent = 4)
+
+		if archivo == "logs.json":
+
+			document_json = {"Logs": {"Encrypt": {}, "Decrypt": {}}}
+
+			with open("logs.json", 'w') as file:
+				json.dump(document_json, file, indent = 4)
 
 class View():
 
@@ -411,6 +490,10 @@ class Controller():
 
 			def modo_encriptar():
 
+				# Variables de tiempo
+				self.timenow = time.strftime("%p")
+				self.now = datetime.now()
+
 				def agregando_texto():
 
 					cantidad_letras = 0
@@ -496,6 +579,19 @@ class Controller():
 					self.view.label_copyfecha.setText(f"{self.now} - {self.timenow}")
 					self.view.label_copyruta.setText(archivo_con_ruta)
 
+					# Se guardan los cambios en el archivo (logs.json)
+
+					# Para dar la posicion del log
+					contador_nombre = 0
+					for log in self.logs_encrypt:
+						contador_nombre += 1
+
+					new_log = {"file_name": f"{nombre_archivo_completo}", "route": f"{archivo_con_ruta}", "time": f"{self.now} - {self.timenow}", "code": f"{self.lista_espaciada}"}
+					self.logs_global["Logs"]["Encrypt"][f"log_{contador_nombre}"] = new_log
+
+					with open("logs.json", 'w') as file:
+						json.dump(self.logs_global, file, indent = 4)
+
 				if self.one_file == 1:
 
 					# En este punto se pasa a configurar el nombre para solo dejar el encriptado
@@ -523,9 +619,22 @@ class Controller():
 					self.view.label_copyfecha.setText(f"{self.now} - {self.timenow}")
 					self.view.label_copyruta.setText(archivo_con_ruta)
 
-				# Si el archivo json no se puede guardar en el .exe se debe hacer un error por si no se puede leer un dato. (EXE)
+					# Para dar la posicion del log
+					contador_nombre = 0
+					for log in self.logs_encrypt:
+						contador_nombre += 1
+
+					new_log = {"file_name": f"{nombre_archivo_completo}", "route": f"{archivo_con_ruta}", "time": f"{self.now} - {self.timenow}", "code": f"{self.lista_espaciada}"}
+					self.logs_global["Logs"]["Encrypt"][f"log_{contador_nombre}"] = new_log
+
+					with open("logs.json", 'w') as file:
+						json.dump(self.logs_global, file, indent = 4)
 
 			def modo_desencriptar(lista_ordenador):
+
+				# Variables de tiempo
+				self.timenow = time.strftime("%p")
+				self.now = datetime.now()
 
 				def agregando_letras_desencriptadas(lista_ordenador):
 
@@ -682,9 +791,20 @@ class Controller():
 					file.close()
 
 					self.view.label_copynombre_2.setText(nombre_archivo_completo)
-					self.view.label_copycodigo_2.setText(self.lista_espaciada)
+					self.view.label_copycodigo_2.setText("")
 					self.view.label_copyfecha_2.setText(f"{self.now} - {self.timenow}")
 					self.view.label_copyruta_2.setText(archivo_con_ruta)
+
+					# Para dar la posicion del log
+					contador_nombre = 0
+					for log in self.logs_decrypt:
+						contador_nombre += 1
+
+					new_log = {"file_name": f"{nombre_archivo_completo}", "route": f"{archivo_con_ruta}", "time": f"{self.now} - {self.timenow}", "code": ""}
+					self.logs_global["Logs"]["Decrypt"][f"log_{contador_nombre}"] = new_log
+
+					with open("logs.json", 'w') as file:
+						json.dump(self.logs_global, file, indent = 4)
 
 				if self.one_file == 1:
 
@@ -705,11 +825,20 @@ class Controller():
 					file.close()
 
 					self.view.label_copynombre_2.setText(nombre_archivo_completo)
-					self.view.label_copycodigo_2.setText(self.lista_espaciada)
+					self.view.label_copycodigo_2.setText("")
 					self.view.label_copyfecha_2.setText(f"{self.now} - {self.timenow}")
 					self.view.label_copyruta_2.setText(archivo_con_ruta)
 
-				# Si el archivo json no se puede guardar en el .exe se debe hacer un error por si no se puede leer un dato. (EXE)
+					# Para dar la posicion del log
+					contador_nombre = 0
+					for log in self.logs_decrypt:
+						contador_nombre += 1
+
+					new_log = {"file_name": f"{nombre_archivo_completo}", "route": f"{archivo_con_ruta}", "time": f"{self.now} - {self.timenow}", "code": ""}
+					self.logs_global["Logs"]["Decrypt"][f"log_{contador_nombre}"] = new_log
+
+					with open("logs.json", 'w') as file:
+						json.dump(self.logs_global, file, indent = 4)
 
 			comprobador()
 
@@ -810,13 +939,23 @@ class Controller():
 			model_class = Model()
 			ajustes_funcionales = model_class.ajustes_funcionales()
 			ajustes_apariencia = model_class.ajustes_apariencia()
+			ajustes_logs = model_class.ajustes_logs()
 
-			# Todas las variables de los ajustes tomadas del JSON (settings.json)
-			self.one_file = ajustes_funcionales[0]
-			self.nombre_desencriptado = ajustes_funcionales[1]
-			self.nombre_encriptado = ajustes_funcionales[2]
-			self.rutas_automaticas = ajustes_funcionales[3]
-			self.grupo_tema = ajustes_apariencia
+			try:
+				# Todas las variables de los ajustes tomadas del JSON (settings.json)
+				self.one_file = ajustes_funcionales[0]
+				self.nombre_desencriptado = ajustes_funcionales[1]
+				self.nombre_encriptado = ajustes_funcionales[2]
+				self.rutas_automaticas = ajustes_funcionales[3]
+				self.grupo_tema = ajustes_apariencia
+
+				# Todas las variables de los logs tomadas del JSON (logs.json")
+				self.logs_encrypt = ajustes_logs[0]
+				self.logs_decrypt = ajustes_logs[1]
+				self.logs_global = ajustes_logs[2]
+
+			except:
+				self.variables_ajustes()
 
 	class settingsFunctions():
 
@@ -863,16 +1002,14 @@ class Controller():
 			simbolos_erroneos = ['/', ':', '*', '?', '"', '<', '>', '|', '!', '@', '#', '$', '%', '&']
 			errores_simbologia = 0
 
-			# Se comprueba si uno de esos simbolos esta en la variable.
+			# Se comprueba si uno de esos simbolos esta en la variable del nombre.
 			for simbolo in simbolos_erroneos:
+
 				if errores_simbologia == 0:
-					if simbolo in nombre_desencriptado:
+
+					if simbolo in nombre_desencriptado or simbolo in nombre_encriptado:
 						errores_simbologia = 1
 						self.view.ejecutar_dialogo("Error (103-1)", f"El nombre no puede tener: ( {simbolo} )")
-						self.organizar_contenido()
-					if simbolo in nombre_encriptado:
-						errores_simbologia = 1
-						self.view.ejecutar_dialogo("Error (103-2)", f"El nombre no puede tener: ( {simbolo} )")
 						self.organizar_contenido()
 
 			if errores_simbologia == 0:
@@ -981,16 +1118,21 @@ CAMBIOS (v1.1.1):
 - Barras de progreso.
 - Solucion de error al encriptar letras con acentos.
 
+CAMBIOS (v1.1.2):
+
+- Archivo de logs para gardar registros.
+- Si el usuario cambia manualmente algun archivo json se reiniciaran los datos.
+
 ERRORES:
 
 - ERROR (100): Errores de funcionamiento:
 
-	- Error (101): Errores de modo
-	- Error (102): Errores de codigo de desencriptacion
-	- Error (103): Errores de nombre de archivo
-	- Error (104): Errores de ruta 
+	- Error (101): Errores de modo.
+	- Error (102): Errores de codigo de desencriptacion.
+	- Error (103): Errores de nombre de archivo.
+	- Error (104): Errores de ruta.
 
 - ERROR (200): Errores de apariencia:
 
-	- Error (201): Error de apariencia no leida
+	- Error (201): Error de apariencia no leida.
 """

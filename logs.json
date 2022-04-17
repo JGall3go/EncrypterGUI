@@ -1,0 +1,20 @@
+{
+    "Logs": {
+        "Encrypt": {
+            "log_0": {
+                "file_name": "archivo.txt",
+                "route": "/home/jgallego/Desktop/Archivos TXT/archivo.txt",
+                "time": "2022-04-17 07:53:58.482071 - AM",
+                "code": "13 27 17 2 11 14 31 26 10 29 32 5 16 28 15 20 19 24 3 0 12 30 6 23 9 21 1 22 7 4 8 18 25 "
+            }
+        },
+        "Decrypt": {
+            "log_0": {
+                "file_name": "archivo.txt",
+                "route": "/home/jgallego/Desktop/Archivos TXT/archivo.txt",
+                "time": "2022-04-17 07:54:01.416030 - AM",
+                "code": ""
+            }
+        }
+    }
+}
